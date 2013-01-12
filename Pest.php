@@ -49,7 +49,7 @@ class Pest {
     // Using PHP 5.2, it cannot be initialised in the static context
     $this->curl_opts[CURLOPT_HEADERFUNCTION] = array($this, 'handle_header');
     
-    if ($this->isApc) $this->isApc = extension_loaded('apc');
+    if ($this->isApc) $this->isApc = extension_loaded('apc') && false === strstr($base_url, 'localhost/');
   }
   
   // $auth can be 'basic' or 'digest'
