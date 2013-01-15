@@ -28,6 +28,7 @@ class Pest {
   
   protected $isApc = true;          // if work APC cache
   protected $apcPrefix = __FILE__;  // prefix for variables in APC
+  protected $apcSubprefix;          // sub prefix for change of $curl_opts
   protected $apcLimitMemory = 0;    // in byte, 0 - no limit
   protected $apcLimitLive = 43200;      // in second, 0 - no limit
   protected $apcCompressionData = true; // compression data
@@ -50,6 +51,7 @@ class Pest {
     $this->curl_opts[CURLOPT_HEADERFUNCTION] = array($this, 'handle_header');
     
     if ($this->isApc) $this->isApc = extension_loaded('apc') && false === strstr($base_url, 'localhost/');
+    if ($this->isApc) $this->apcSubprefix = crc32(serialize($this->curl_opts));
   }
   
   // $auth can be 'basic' or 'digest'
@@ -309,7 +311,7 @@ class Pest {
    * @return mixed  if failure return false
    */
   protected function apcRead($url) {
-    $body = apc_fetch($this->apcPrefix.$url);
+    $body = apc_fetch($this->apcPrefix.$this->apcSubprefix.$url);
     if ($this->apcCompressionData && $body !== false) $body = gzuncompress($body);
     return $body;
   }
@@ -329,7 +331,7 @@ class Pest {
     if ($sum > $this->apcLimitMemory) return false;
     
     if ($this->apcCompressionData) $body = gzcompress($body);
-    return apc_store($this->apcPrefix.$url, $body, $this->apcLimitLive);
+    return apc_store($this->apcPrefix.$this->apcSubprefix.$url, $body, $this->apcLimitLive);
   }
 }
 
