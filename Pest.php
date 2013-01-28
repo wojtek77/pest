@@ -77,12 +77,12 @@ class Pest {
    */
   public function get($url, $isApc = true) {
     $isApc = $isApc && $this->isApc;
-    if ($isApc && false !== $body=$this->apcRead($this->base_url.$url)) return $this->processBody($body);
+    if ($isApc && false !== $body=$this->apcRead($urlFinal=$this->urlFinal($url))) return $this->processBody($body);
     
     $curl = $this->prepRequest($this->curl_opts, $url);
     $body = $this->doRequest($curl);
     
-    if ($isApc) $this->apcWrite($this->base_url.$url, $body);
+    if ($isApc) $this->apcWrite($urlFinal, $body);
     
     $body = $this->processBody($body);
     
@@ -207,7 +207,7 @@ class Pest {
   
   protected function prepRequest($opts, $url) {
     if (strncmp($url, $this->base_url, strlen($this->base_url)) != 0) {
-      $url = $this->base_url . $url;
+      $url = $this->urlFinal($url);
     }
     $curl = curl_init($url);
     
@@ -308,20 +308,31 @@ class Pest {
   
   /**
    * @param string $url
+   * @return string
+   */
+  protected function urlFinal($url)
+  {
+    if (substr($this->base_url, -1) === '/' && isset($url{0}) && $url{0} === '/')
+      $url = ltrim($url);
+    return $this->base_url.$url;
+  }
+  
+  /**
+   * @param string $urlFinal
    * @return mixed  if failure return false
    */
-  protected function apcRead($url) {
-    $body = apc_fetch($this->apcPrefix.$this->apcSubprefix.$url);
+  protected function apcRead($urlFinal) {
+    $body = apc_fetch($this->apcPrefix.$this->apcSubprefix.$urlFinal);
     if ($this->apcCompressionData && $body !== false) $body = gzuncompress($body);
     return $body;
   }
   
   /**
-   * @param string $url
+   * @param string $urlFinal
    * @param mixed $body
    * @return boolean
    */
-  protected function apcWrite($url, $body) {
+  protected function apcWrite($urlFinal, $body) {
     $sum = 0;
     if($this->apcLimitMemory > 0) {
       foreach (new APCIterator('user', '/^'.preg_quote($this->apcPrefix).'/') as $v) {
@@ -331,7 +342,7 @@ class Pest {
     if ($sum > $this->apcLimitMemory) return false;
     
     if ($this->apcCompressionData) $body = gzcompress($body);
-    return apc_store($this->apcPrefix.$this->apcSubprefix.$url, $body, $this->apcLimitLive);
+    return apc_store($this->apcPrefix.$this->apcSubprefix.$urlFinal, $body, $this->apcLimitLive);
   }
 }
 
