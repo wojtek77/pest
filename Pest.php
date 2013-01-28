@@ -14,7 +14,7 @@ class Pest {
   public $curl_opts = array(
   	CURLOPT_RETURNTRANSFER => true,  // return result instead of echoing
   	CURLOPT_SSL_VERIFYPEER => false, // stop cURL from verifying the peer's certificate
-  	CURLOPT_FOLLOWLOCATION => false,  // follow redirects, Location: headers
+  	CURLOPT_FOLLOWLOCATION => true,  // follow redirects, Location: headers
   	CURLOPT_MAXREDIRS      => 10     // but dont redirect more than 10 times
   );
 
@@ -30,8 +30,8 @@ class Pest {
   protected $apcPrefix = __FILE__;  // prefix for variables in APC
   protected $apcSubprefix;          // sub prefix for change of $curl_opts
   protected $apcLimitMemory = 0;    // in byte, 0 - no limit
-  protected $apcLimitLive = 43200;      // in second, 0 - no limit
-  protected $apcCompressionData = true; // compression data
+  protected $apcLimitLive = 0;      // in second, 0 - no limit
+  protected $apcCompressionData = false; // compression data
 
 
   public function __construct($base_url) {
