@@ -1,4 +1,2 @@
 
-
-git remote add upstream https://github.com/educoder/pest.git
-git fetch upstream
+git remote add -f upstream https://github.com/educoder/pest.git
