@@ -77,7 +77,7 @@ class Pest {
    */
   public function get($url, $isApc = true) {
     $isApc = $isApc && $this->isApc;
-    if ($isApc && false !== $body=$this->apcRead($urlFinal=$this->urlFinal($url))) return $this->processBody($body);
+    if ($isApc && false !== $body=$this->apcRead($urlFinal=$this->finalUrl($url))) return $this->processBody($body);
     
     $curl = $this->prepRequest($this->curl_opts, $url);
     $body = $this->doRequest($curl);
@@ -219,7 +219,7 @@ class Pest {
   
   protected function prepRequest($opts, $url) {
     if (strncmp($url, $this->base_url, strlen($this->base_url)) != 0) {
-      $url = $this->urlFinal($url);
+      $url = $this->finalUrl($url);
     }
     $curl = curl_init($url);
     
@@ -322,10 +322,10 @@ class Pest {
    * @param string $url
    * @return string
    */
-  protected function urlFinal($url)
+  protected function finalUrl($url)
   {
     if (substr($this->base_url, -1) === '/' && isset($url{0}) && $url{0} === '/')
-      $url = ltrim($url);
+      $url = ltrim($url, '/');
     return $this->base_url.$url;
   }
   
